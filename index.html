@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>AVAR | Avatar</title>
+    <meta charset="utf-8" http-equiv="Content-Type" content="text/html; />
+    <meta name=" viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+    <div id="info">
+        <div class="content">
+            <div class="cloths option">
+                <img class="logo" src="./log.png" alt="" />
+            </div>
+            <div class="btns">
+                <button id="changeCloth">
+                    <p>cloth</p>
+                </button>
+                <button id="changeHair">
+                    <p>hair</p>
+                </button>
+                <button id="changeHeadwear">
+                    <p>headwear</p>
+                </button>
+            </div>
+            <div class="avatar">
+                <canvas id="renderCanvas"></canvas>
+            </div>
+
+            <div class="actions option"></div>
+
+            <script>
+                const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+                const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+                let wave, body, guidi, battle, bunhair, batear;
+                let clothId = 1;
+
+                // Add your code here matching the playground format
+                const createScene = function () {
+                    const scene = new BABYLON.Scene(engine);
+
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/animation/wave.glb").then((obj) => {
+                        wave = obj.meshes[0];
+                    });
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/avatar/avatar_girl.glb").then((obj) => {
+                        body = obj.meshes[0];
+                    })
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/cloth/battle.glb").then((obj) => {
+                        battle = obj.meshes[0];
+                    });
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/shoes/guidi.glb").then((obj) => {
+                        guidi = obj.meshes[0];
+                    });
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/hair/bunhair.glb").then((obj) => {
+                        bunhair = obj.meshes[0];
+                    });
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", "./glb/headwear/batear.glb").then((obj) => {
+                        batear = obj.meshes[0];
+                    });
+
+                    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2.5, 3, new BABYLON.Vector3(0, 1, 0));
+
+                    camera.attachControl(canvas, true);
+                    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+
+                    return scene;
+                };
+
+                const scene = createScene(); //Call the createScene function
+
+
+                scene.autoClear = false;
+
+                var reflectionTexture = new BABYLON.HDRCubeTexture("./textures/venice_sunset_1k.hdr", scene, 128, false, true, false, true);
+                scene.environmentTexture = reflectionTexture;
+
+                // load the materials to the two sides 
+                function initBtn() {
+                    const clothArr = ["battle", "dream", "wave", "jingying", "xiegu", "yuehua"];
+                    const headwearArr = ["batear", "crown", "rose"];
+                    const hairArr = ["bunhair", "shorthair", "twobunhair"];
+
+
+                    let clothDiv = document.getElementsByClassName("cloths");
+                    let hairDiv = document.getElementsByClassName("actions");
+                    function func1(ele, arr, path) {
+                        arr.map((item, index) => {
+                            const btnItem = document.createElement("div");
+                            ele[0].appendChild(btnItem);
+                            const imgItem = document.createElement("img");
+                            btnItem.appendChild(imgItem);
+                            imgItem.src = `./glb/${path}/${item}.png`;
+                            btnItem.onclick = () => {
+                                if (path === 'cloth') {
+                                    battle.dispose();
+                                } else if (path === 'headwear') {
+                                    batear.dispose();
+                                } else {
+                                    bunhair.dispose();
+                                }
+
+                                BABYLON.SceneLoader.ImportMeshAsync("", "", `./glb/${path}/${item}.glb`).then((obj) => {
+                                    if (path === 'cloth') {
+                                        battle = obj.meshes[0];
+                                    } else if (path === 'headwear') {
+                                        batear = obj.meshes[0];
+                                    } else {
+                                        bunhair = obj.meshes[0];
+                                    }
+                                });
+                            };
+                        });
+                    }
+                    func1(clothDiv, clothArr, "cloth", battle);
+                    func1(hairDiv, headwearArr, "headwear", batear);
+                    func1(hairDiv, hairArr, "hair", bunhair);
+                }
+
+                initBtn();
+
+                document.getElementById("changeCloth").onclick = changeCloth;
+                document.getElementById("changeHair").onclick = changeHair;
+                document.getElementById("changeHeadwear").onclick = changeHeadwear;
+
+                function changeCloth() {
+                    if (clothId == 6) {
+                        clothId = 1;
+                    } else {
+                        clothId += 1;
+                    }
+                    const clothName = {
+                        1: "battle.glb",
+                        2: "dream.glb",
+                        3: "wave.glb",
+                        4: "jingying.glb",
+                        5: "xiegu.glb",
+                        6: "yuehua.glb",
+                    };
+                    var selectedCloth = clothName[clothId];
+                    battle.dispose();
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", `./glb/cloth/${selectedCloth}`).then((obj) => {
+                        battle = obj.meshes[0];
+                    });
+                }
+
+                function changeHair() {
+                    console.log("change hair");
+                    if (clothId >= 3) {
+                        clothId = 1;
+                    } else {
+                        clothId += 1;
+                    }
+                    const clothName = {
+                        1: "bunhair.glb",
+                        2: "shorthair.glb",
+                        3: "twobunhair.glb",
+                    };
+                    var selectedCloth = clothName[clothId];
+                    bunhair.dispose();
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", `./glb/hair/${selectedCloth}`).then((obj) => {
+                        bunhair = obj.meshes[0];
+                    });
+                }
+
+                function changeHeadwear() {
+                    if (clothId >= 3) {
+                        clothId = 1;
+                    } else {
+                        clothId += 1;
+                    }
+                    const clothName = {
+                        1: "batear.glb",
+                        2: "crown.glb",
+                        3: "rose.glb",
+                    };
+                    var selectedCloth = clothName[clothId];
+                    batear.dispose();
+                    BABYLON.SceneLoader.ImportMeshAsync("", "", `./glb/headwear/${selectedCloth}`).then((obj) => {
+                        batear = obj.meshes[0];
+                    });
+                }
+
+
+                // Register a render loop to repeatedly render the scene
+                engine.runRenderLoop(function () {
+                    scene.render();
+                });
+
+                // Watch for browser/canvas resize events
+                window.addEventListener("resize", function () {
+                    engine.resize();
+                });
+
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
